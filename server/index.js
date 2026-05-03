@@ -18,28 +18,58 @@ const io = new Server(server, {
   }
 });
 
-// Mock Database of Spicy/Fun Questions
 const questions = [
-  { normal: "What is your favorite vacation spot?", imposter: "What is the worst place to be stuck for a week?" },
-  { normal: "What is a superpower you wish you had?", imposter: "What is a superpower that would actually be annoying?" },
-  { normal: "Name a food you love eating.", imposter: "Name a food you absolutely hate." },
-  { normal: "What is the best pet to have?", imposter: "What is the worst animal to keep in your house?" },
-  { normal: "What is the most attractive trait in a person?", imposter: "What is the biggest red flag in a person?" },
-  { normal: "If you could only eat one thing for the rest of your life, what would it be?", imposter: "What is the grossest thing you have ever tasted?" },
-  { normal: "What is your biggest fear?", imposter: "What is something you find extremely funny that others don't?" },
-  { normal: "What is a secret talent you have?", imposter: "What is something you are embarrassingly bad at?" },
-  { normal: "Who is your celebrity crush?", imposter: "Which celebrity do you think is completely overrated?" },
-  { normal: "What is the best way to spend a weekend?", imposter: "What is the most boring chore you have to do?" },
-  { normal: "What is your favorite movie of all time?", imposter: "What is a movie you walked out of or turned off?" },
-  { normal: "If you won the lottery, what is the first thing you would buy?", imposter: "What is the stupidest thing you've ever spent money on?" },
-  { normal: "What is a habit you have that you are proud of?", imposter: "What is your worst, most annoying habit?" },
+  { normal: "What is the best vacation spot you've ever been to?", imposter: "What is the most overrated tourist destination?" },
+  { normal: "What superpower would you love to have?", imposter: "What superpower would actually be a curse to have?" },
+  { normal: "Name a food you could eat every single day.", imposter: "Name a food you find genuinely disgusting." },
+  { normal: "What is the best pet to own?", imposter: "What is the worst possible animal to have as a pet?" },
+  { normal: "What is the most attractive quality in a partner?", imposter: "What is the biggest dealbreaker in a relationship?" },
+  { normal: "If you won the lottery, what's the first thing you'd buy?", imposter: "What is the dumbest way someone could blow their lottery winnings?" },
+  { normal: "What is your favorite movie of all time?", imposter: "What movie do you think is completely overrated?" },
+  { normal: "What is a secret talent you have?", imposter: "What is something you are hilariously bad at?" },
+  { normal: "Who is your celebrity crush?", imposter: "Which celebrity do you find the most annoying?" },
+  { normal: "What is the best way to spend a Sunday?", imposter: "What is the most soul-crushing way to spend a Sunday?" },
+  { normal: "What is your go-to karaoke song?", imposter: "What song makes you immediately want to leave the room?" },
+  { normal: "What is the best compliment you've ever received?", imposter: "What is the most backhanded compliment someone gave you?" },
+  { normal: "What is a childhood memory you cherish?", imposter: "What is something you were terrified of as a kid?" },
   { normal: "What is the best piece of advice you've ever received?", imposter: "What is the worst advice someone has ever given you?" },
-  { normal: "Where is the best place to hide something?", imposter: "Where is the best place to hide a dead body?" },
-  { normal: "What is a song that always makes you dance?", imposter: "What is a song that instantly ruins your mood?" },
-  { normal: "What is your ideal first date?", imposter: "What would be the absolute worst first date?" },
-  { normal: "What is a childhood show you loved?", imposter: "What is a kid's show that terrified you?" },
-  { normal: "If you were an animal, what would you be?", imposter: "What animal perfectly describes your ex?" },
-  { normal: "What is the most beautiful thing in the world?", imposter: "What is the most disgusting thing you can imagine?" }
+  { normal: "What is your dream job?", imposter: "What job sounds like your personal hell?" },
+  { normal: "What is your most embarrassing habit?", imposter: "What habit of yours would drive a roommate crazy?" },
+  { normal: "What is the best gift you've ever received?", imposter: "What is the worst gift someone has ever given you?" },
+  { normal: "What is your ultimate comfort food?", imposter: "What food do people love that you think is disgusting?" },
+  { normal: "What is your ideal first date?", imposter: "What would be the most awkward first date scenario?" },
+  { normal: "What is the funniest thing that has ever happened to you?", imposter: "What is the most embarrassing thing that has happened to you in public?" },
+  { normal: "What is a show you can rewatch endlessly?", imposter: "What popular show do you think is genuinely terrible?" },
+  { normal: "What is your favorite season and why?", imposter: "What season makes you absolutely miserable?" },
+  { normal: "What would you do with a free weekend and no responsibilities?", imposter: "What daily task do you wish you never had to do again?" },
+  { normal: "Name a skill you wish you had.", imposter: "Name a skill that is completely useless in real life." },
+  { normal: "What is the best holiday tradition?", imposter: "What holiday tradition do you secretly hate?" },
+  { normal: "What is your go-to pump-up song?", imposter: "What song do you think is terrible but everyone loves?" },
+  { normal: "What is something you are genuinely proud of?", imposter: "What is something you did that you are low-key ashamed of?" },
+  { normal: "What is the best type of weather?", imposter: "What type of weather makes you want to stay in bed all day?" },
+  { normal: "What is the best app on your phone?", imposter: "What app do you think is a complete waste of time?" },
+  { normal: "What animal would you be if you could choose?", imposter: "What animal do you think is overrated or kind of creepy?" },
+  { normal: "What is your favorite thing about yourself?", imposter: "What is something you would change about yourself?" },
+  { normal: "What is a book that changed your life?", imposter: "What book do you think is massively overhyped?" },
+  { normal: "What is the best cuisine in the world?", imposter: "What cuisine do you think is the most overrated?" },
+  { normal: "What is one thing you could not live without?", imposter: "What do people treat as a necessity that you think is pointless?" },
+  { normal: "What is the best social media platform?", imposter: "What social media platform do you think is the most toxic?" },
+  { normal: "What is a place you dream of visiting?", imposter: "What travel destination do you have zero interest in?" },
+  { normal: "What is the best way to exercise?", imposter: "What form of exercise sounds like absolute torture?" },
+  { normal: "What is something that always makes you laugh?", imposter: "What do people find funny that you genuinely don't get?" },
+  { normal: "What is your go-to order at a restaurant?", imposter: "What is a dish you would never order at a restaurant?" },
+  { normal: "What is the most romantic gesture?", imposter: "What romantic gesture would actually make you cringe?" },
+  { normal: "What would you do with an extra hour every day?", imposter: "What daily task do you wish someone else would do for you?" },
+  { normal: "What is the best thing about your hometown?", imposter: "What is the most boring thing about your hometown?" },
+  { normal: "What is a movie that genuinely made you cry?", imposter: "What movie do people cry at that you found ridiculous?" },
+  { normal: "What is your favorite thing to do at a party?", imposter: "What is the most annoying thing people do at parties?" },
+  { normal: "What is the best genre of music?", imposter: "What music genre could you absolutely not stand?" },
+  { normal: "What is the best way to start your morning?", imposter: "What makes a morning feel completely ruined?" },
+  { normal: "What is the nicest thing a stranger has done for you?", imposter: "What is something strangers do that annoys you?" },
+  { normal: "What is a life goal you are working toward?", imposter: "What is a goal society expects you to have that you don't care about?" },
+  { normal: "What is the best invention of the last 50 years?", imposter: "What modern invention do you think has made life worse?" },
+  { normal: "What is your favorite thing about your best friend?", imposter: "What is something a friend did that you never fully forgave?" },
+  { normal: "What is the most fun you've had with no money?", imposter: "What experience was way too expensive and not worth it?" },
 ];
 
 // In-memory state
@@ -244,15 +274,10 @@ io.on('connection', (socket) => {
       room.imposterCaught = isMajority;
 
       if (isMajority) {
-        // Imposter caught! Normal players who voted correctly get 5 points.
         Object.keys(room.players).forEach(id => {
-          const p = room.players[id];
-          if (p.role === 'normal' && p.vote === room.imposterId) {
-            p.score += 5;
-          }
+          if (id !== room.imposterId) room.players[id].score += 5;
         });
       } else {
-        // Imposter survived! Imposter gets 10 points.
         room.players[room.imposterId].score += 10;
       }
 
