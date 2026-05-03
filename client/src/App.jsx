@@ -265,7 +265,9 @@ function App() {
         </div>
 
         {gameState.me.isHost && (
-          <button style={{marginTop: '2rem'}} onClick={startGame}>Next Round</button>
+          gameState.currentRound >= gameState.maxRounds
+            ? <button style={{marginTop: '2rem'}} onClick={nextPhase}>View Final Results</button>
+            : <button style={{marginTop: '2rem'}} onClick={startGame}>Next Round</button>
         )}
       </div>
     );

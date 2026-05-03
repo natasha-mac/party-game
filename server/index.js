@@ -255,6 +255,9 @@ io.on('connection', (socket) => {
     if (room.state === 'reveal') {
       room.state = 'voting';
       emitRoomUpdate(code);
+    } else if (room.state === 'results') {
+      room.state = 'game_over';
+      emitRoomUpdate(code);
     }
   });
 
@@ -284,11 +287,7 @@ io.on('connection', (socket) => {
         room.players[room.imposterId].score += 10;
       }
 
-      if (room.currentRound >= room.maxRounds) {
-        room.state = 'game_over';
-      } else {
-        room.state = 'results';
-      }
+      room.state = 'results';
 
       emitRoomUpdate(code);
     } else {
