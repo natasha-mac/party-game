@@ -171,6 +171,9 @@ function App() {
         Round {gameState.currentRound} / {gameState.maxRounds}
       </div>
       <h2>Answers Revealed</h2>
+      <p className="question-text" style={{fontSize: '1.1rem', marginBottom: '1.5rem', color: 'var(--text-muted)'}}>
+        "{gameState.normalQuestion}"
+      </p>
       <div style={{marginBottom: '2rem'}}>
         {gameState.answers.map(a => (
           <div key={a.id} className="answer-card">
@@ -206,6 +209,9 @@ function App() {
           Round {gameState.currentRound} / {gameState.maxRounds}
         </div>
         <h2>Who is the Imposter?</h2>
+        <p className="question-text" style={{fontSize: '1rem', marginBottom: '0.5rem', color: 'var(--text-muted)'}}>
+          "{gameState.normalQuestion}"
+        </p>
         <p style={{textAlign: 'center', marginBottom: '1.5rem', color: 'var(--text-muted)'}}>
           The imposter will only be caught if a majority votes for them.
         </p>

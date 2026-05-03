@@ -111,6 +111,7 @@ function emitRoomUpdate(roomId) {
     }
 
     if (room.state === 'reveal' || room.state === 'voting') {
+      playerSpecificData.normalQuestion = room.questionPair.normal;
       playerSpecificData.answers = Object.entries(room.players).map(([id, p]) => ({
         id,
         name: p.name,
