@@ -137,12 +137,13 @@ function emitRoomUpdate(roomId) {
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
 
-  socket.on('create_room', (name) => {
+  socket.on('create_room', ({ name, rounds }) => {
     const code = generateRoomCode();
+    const maxRounds = Number.isInteger(rounds) && rounds >= 1 && rounds <= 20 ? rounds : 5;
     rooms[code] = {
       state: 'lobby',
       currentRound: 0,
-      maxRounds: 5,
+      maxRounds,
       usedQuestions: [],
       players: {
         [socket.id]: { name, score: 0, isHost: true, role: 'normal', answer: '', vote: '' }

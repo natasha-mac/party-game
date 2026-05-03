@@ -8,6 +8,7 @@ function App() {
   const [gameState, setGameState] = useState(null);
   const [name, setName] = useState('');
   const [roomCode, setRoomCode] = useState('');
+  const [rounds, setRounds] = useState(5);
   const [error, setError] = useState('');
   const [answer, setAnswer] = useState('');
   const [vote, setVote] = useState('');
@@ -39,7 +40,7 @@ function App() {
 
   const createRoom = () => {
     if (!name.trim()) return setError('Please enter your name');
-    socket.emit('create_room', name);
+    socket.emit('create_room', { name, rounds: Number(rounds) });
   };
 
   const joinRoom = () => {
@@ -70,12 +71,23 @@ function App() {
     <div className="glass-panel">
       <h1>Deception Game</h1>
       {error && <div style={{color: 'var(--danger)', marginBottom: '1rem', textAlign: 'center'}}>{error}</div>}
-      <input 
-        type="text" 
-        placeholder="Your Name" 
-        value={name} 
-        onChange={(e) => setName(e.target.value)} 
+      <input
+        type="text"
+        placeholder="Your Name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
       />
+      <div style={{display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem'}}>
+        <label style={{color: 'var(--text-muted)', whiteSpace: 'nowrap'}}>Rounds</label>
+        <input
+          type="number"
+          min={1}
+          max={20}
+          value={rounds}
+          onChange={(e) => setRounds(Math.min(20, Math.max(1, Number(e.target.value))))}
+          style={{marginBottom: 0, textAlign: 'center'}}
+        />
+      </div>
       <button onClick={createRoom}>Create New Game</button>
       
       <div style={{textAlign: 'center', margin: '1rem 0', color: 'var(--text-muted)'}}>OR</div>
