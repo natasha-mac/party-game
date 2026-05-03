@@ -1,0 +1,302 @@
+import { useState, useEffect, useRef } from 'react';
+import { io } from 'socket.io-client';
+import './index.css';
+
+const socket = io(window.location.hostname === 'localhost' ? 'http://localhost:3001' : '/');
+
+function App() {
+  const [gameState, setGameState] = useState(null);
+  const [name, setName] = useState('');
+  const [roomCode, setRoomCode] = useState('');
+  const [error, setError] = useState('');
+  const [answer, setAnswer] = useState('');
+  const [vote, setVote] = useState('');
+  const [showRole, setShowRole] = useState(false);
+  const prevStateRef = useRef(null);
+
+  useEffect(() => {
+    socket.on('room_update', (data) => {
+      if (data.state === 'question' && prevStateRef.current !== 'question') {
+        setShowRole(true);
+        setTimeout(() => setShowRole(false), 3000);
+        setAnswer('');
+        setVote('');
+      }
+      prevStateRef.current = data.state;
+      setGameState(data);
+    });
+
+    socket.on('error', (msg) => {
+      setError(msg);
+      setTimeout(() => setError(''), 3000);
+    });
+
+    return () => {
+      socket.off('room_update');
+      socket.off('error');
+    };
+  }, []);
+
+  const createRoom = () => {
+    if (!name.trim()) return setError('Please enter your name');
+    socket.emit('create_room', name);
+  };
+
+  const joinRoom = () => {
+    if (!name.trim()) return setError('Please enter your name');
+    if (!roomCode.trim()) return setError('Please enter a room code');
+    socket.emit('join_room', { name, code: roomCode });
+  };
+
+  const startGame = () => {
+    socket.emit('start_game', gameState.roomId);
+  };
+
+  const submitAnswer = () => {
+    if (!answer.trim()) return setError('Please enter an answer');
+    socket.emit('submit_answer', { code: gameState.roomId, answer });
+  };
+
+  const nextPhase = () => {
+    socket.emit('next_phase', gameState.roomId);
+  };
+
+  const submitVote = (id) => {
+    setVote(id);
+    socket.emit('submit_vote', { code: gameState.roomId, voteForId: id });
+  };
+
+  const renderHome = () => (
+    <div className="glass-panel">
+      <h1>Deception Game</h1>
+      {error && <div style={{color: 'var(--danger)', marginBottom: '1rem', textAlign: 'center'}}>{error}</div>}
+      <input 
+        type="text" 
+        placeholder="Your Name" 
+        value={name} 
+        onChange={(e) => setName(e.target.value)} 
+      />
+      <button onClick={createRoom}>Create New Game</button>
+      
+      <div style={{textAlign: 'center', margin: '1rem 0', color: 'var(--text-muted)'}}>OR</div>
+      
+      <input 
+        type="text" 
+        placeholder="Room Code" 
+        value={roomCode} 
+        onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+        maxLength={4}
+      />
+      <button className="secondary" onClick={joinRoom}>Join Game</button>
+    </div>
+  );
+
+  const renderLobby = () => (
+    <div className="glass-panel">
+      <h2>Room Code: <span style={{color: 'var(--primary)', letterSpacing: '2px'}}>{gameState.roomId}</span></h2>
+      <h3>Players ({gameState.players.length})</h3>
+      <div className="player-list">
+        {gameState.players.map(p => (
+          <div key={p.id} className="player-item">
+            <span>{p.name}</span>
+            {p.isHost && <span className="badge host">Host</span>}
+          </div>
+        ))}
+      </div>
+      {gameState.me.isHost ? (
+        <button onClick={startGame} disabled={gameState.players.length < 3}>
+          {gameState.players.length < 3 ? 'Need 3+ Players' : 'Start Game'}
+        </button>
+      ) : (
+        <div style={{textAlign: 'center', color: 'var(--text-muted)'}}>
+          Waiting for host to start...
+        </div>
+      )}
+    </div>
+  );
+
+  const renderQuestion = () => {
+    if (showRole) {
+      return (
+        <div className="glass-panel role-reveal">
+          <h3>You are...</h3>
+          {gameState.me.role === 'imposter' ? (
+            <div className="role-reveal imposter">
+              <h2>THE IMPOSTER</h2>
+              <p>Blend in! Try not to get caught.</p>
+            </div>
+          ) : (
+            <div className="role-reveal normal">
+              <h2>NORMAL</h2>
+              <p>Find the imposter among you.</p>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    const me = gameState.players.find(p => p.id === gameState.me.id);
+    
+    if (me?.hasAnswered) {
+      return (
+        <div className="glass-panel">
+          <h3>Waiting for others...</h3>
+          <div className="spinner"></div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="glass-panel">
+        <div style={{textAlign: 'right', color: 'var(--text-muted)', marginBottom: '1rem'}}>
+          Round {gameState.currentRound} / {gameState.maxRounds}
+        </div>
+        <h2 style={{color: 'var(--secondary)'}}>Question</h2>
+        <p className="question-text">{gameState.myQuestion}</p>
+        <input 
+          type="text" 
+          placeholder="Type your answer here..." 
+          value={answer} 
+          onChange={(e) => setAnswer(e.target.value)} 
+          onKeyDown={(e) => e.key === 'Enter' && submitAnswer()}
+        />
+        <button onClick={submitAnswer}>Submit Answer</button>
+      </div>
+    );
+  };
+
+  const renderReveal = () => (
+    <div className="glass-panel">
+      <div style={{textAlign: 'right', color: 'var(--text-muted)', marginBottom: '1rem'}}>
+        Round {gameState.currentRound} / {gameState.maxRounds}
+      </div>
+      <h2>Answers Revealed</h2>
+      <div style={{marginBottom: '2rem'}}>
+        {gameState.answers.map(a => (
+          <div key={a.id} className="answer-card">
+            <div className="answer-author">{a.name}</div>
+            <p>{a.answer}</p>
+          </div>
+        ))}
+      </div>
+      {gameState.me.isHost ? (
+        <button onClick={nextPhase}>Start Voting</button>
+      ) : (
+        <div style={{textAlign: 'center', color: 'var(--text-muted)'}}>
+          Discuss! Host will start voting soon.
+        </div>
+      )}
+    </div>
+  );
+
+  const renderVoting = () => {
+    const me = gameState.players.find(p => p.id === gameState.me.id);
+    if (me?.hasVoted) {
+      return (
+        <div className="glass-panel">
+          <h3>Waiting for others to vote...</h3>
+          <div className="spinner"></div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="glass-panel">
+        <div style={{textAlign: 'right', color: 'var(--text-muted)', marginBottom: '1rem'}}>
+          Round {gameState.currentRound} / {gameState.maxRounds}
+        </div>
+        <h2>Who is the Imposter?</h2>
+        <p style={{textAlign: 'center', marginBottom: '1.5rem', color: 'var(--text-muted)'}}>
+          The imposter will only be caught if a majority votes for them.
+        </p>
+        <div className="player-list">
+          {gameState.players.filter(p => p.id !== gameState.me.id).map(p => (
+            <button 
+              key={p.id} 
+              className="secondary" 
+              onClick={() => submitVote(p.id)}
+            >
+              Vote for {p.name}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const renderResults = () => {
+    const imposter = gameState.players.find(p => p.id === gameState.imposterId);
+    
+    return (
+      <div className="glass-panel">
+        <h2 style={{fontSize: '2rem'}}>Round Over!</h2>
+        <div style={{textAlign: 'center', marginBottom: '2rem'}}>
+          <p style={{fontSize: '1.2rem', color: 'var(--text-muted)'}}>The Imposter was...</p>
+          <h3 style={{fontSize: '2.5rem', color: 'var(--danger)', margin: '0.5rem 0'}}>{imposter?.name}</h3>
+          <p style={{color: gameState.imposterCaught ? 'var(--success)' : 'var(--danger)'}}>
+            {gameState.imposterCaught ? 'Caught by majority vote! Normal players get +5 pts.' : 'Survived the vote! Imposter gets +10 pts.'}
+          </p>
+        </div>
+
+        <div className="scoreboard">
+          <h3>Current Scores</h3>
+          {gameState.players.sort((a,b) => b.score - a.score).map(p => (
+            <div key={p.id} className="scoreboard-item">
+              <span>{p.name} {p.id === gameState.imposterId && <span style={{color: 'var(--danger)', fontSize: '0.8rem'}}>(Imposter)</span>}</span>
+              <span className="score">{p.score} pts</span>
+            </div>
+          ))}
+        </div>
+
+        {gameState.me.isHost && (
+          <button style={{marginTop: '2rem'}} onClick={startGame}>Next Round</button>
+        )}
+      </div>
+    );
+  };
+
+  const renderGameOver = () => {
+    const sortedPlayers = [...gameState.players].sort((a,b) => b.score - a.score);
+    const winner = sortedPlayers[0];
+
+    return (
+      <div className="glass-panel">
+        <h2 style={{fontSize: '2.5rem', background: 'linear-gradient(to right, #fbbf24, #f59e0b)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}}>Game Over!</h2>
+        
+        <div style={{textAlign: 'center', margin: '2rem 0'}}>
+          <p style={{fontSize: '1.2rem', color: 'var(--text-muted)'}}>The Ultimate Winner is...</p>
+          <h3 style={{fontSize: '3rem', margin: '1rem 0'}}>{winner?.name} 👑</h3>
+          <p>with {winner?.score} points!</p>
+        </div>
+
+        <div className="scoreboard">
+          <h3>Final Standings</h3>
+          {sortedPlayers.map((p, i) => (
+            <div key={p.id} className="scoreboard-item">
+              <span>{i === 0 ? '🏆 ' : ''}{p.name}</span>
+              <span className="score">{p.score} pts</span>
+            </div>
+          ))}
+        </div>
+
+        {gameState.me.isHost && (
+          <button style={{marginTop: '2rem'}} onClick={startGame}>Play Again</button>
+        )}
+      </div>
+    );
+  };
+
+  if (!gameState) return renderHome();
+
+  switch (gameState.state) {
+    case 'lobby': return renderLobby();
+    case 'question': return renderQuestion();
+    case 'reveal': return renderReveal();
+    case 'voting': return renderVoting();
+    case 'results': return renderResults();
+    case 'game_over': return renderGameOver();
+    default: return renderHome();
+  }
+}
+
+export default App;

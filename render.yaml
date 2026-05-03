@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: deception-game
+    runtime: node
+    buildCommand: npm install --prefix client && npm install --prefix server && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
