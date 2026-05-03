@@ -164,6 +164,7 @@ io.on('connection', (socket) => {
         [socket.id]: { name, persistentId, score: 0, isHost: true, role: 'normal', answer: '', vote: '', disconnected: false }
       },
       imposterId: null,
+      lastImposterId: null,
       imposterCaught: false,
       questionPair: null
     };
@@ -225,6 +226,7 @@ io.on('connection', (socket) => {
       });
       room.currentRound = 0;
       room.usedQuestions = [];
+      room.lastImposterId = null;
       Object.values(room.players).forEach(p => { p.score = 0; });
     }
 
@@ -239,8 +241,10 @@ io.on('connection', (socket) => {
       room.players[id].role = 'normal';
     });
 
-    const imposterIndex = Math.floor(Math.random() * playerIds.length);
-    room.imposterId = playerIds[imposterIndex];
+    const imposterPool = playerIds.filter(id => id !== room.lastImposterId);
+    const pool = imposterPool.length > 0 ? imposterPool : playerIds;
+    room.imposterId = pool[Math.floor(Math.random() * pool.length)];
+    room.lastImposterId = room.imposterId;
     room.players[room.imposterId].role = 'imposter';
 
     const availableIndices = questions.map((_, i) => i).filter(i => !room.usedQuestions.includes(i));
@@ -293,6 +297,7 @@ io.on('connection', (socket) => {
         Object.keys(room.players).forEach(id => {
           if (id !== room.imposterId) room.players[id].score += 5;
         });
+        room.players[room.imposterId].score -= 5;
       } else {
         room.players[room.imposterId].score += 10;
       }

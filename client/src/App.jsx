@@ -298,7 +298,7 @@ function App() {
           <p style={{fontSize: '1.2rem', color: 'var(--text-muted)'}}>The Imposter was...</p>
           <h3 style={{fontSize: '2.5rem', color: 'var(--danger)', margin: '0.5rem 0'}}>{imposter?.name}</h3>
           <p style={{color: gameState.imposterCaught ? 'var(--success)' : 'var(--danger)'}}>
-            {gameState.imposterCaught ? 'Caught! Everyone except the imposter gets +5 pts.' : 'Survived! Imposter gets +10 pts.'}
+            {gameState.imposterCaught ? 'Caught! Everyone else gets +5 pts, imposter loses 5 pts.' : 'Survived! Imposter gets +10 pts.'}
           </p>
           <div style={{marginTop: '1.5rem', textAlign: 'left'}}>
             <div className="answer-card">
