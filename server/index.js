@@ -186,6 +186,14 @@ io.on('connection', (socket) => {
     emitRoomUpdate(roomCode);
   });
 
+  socket.on('leave_room', (code) => {
+    const room = rooms[code];
+    if (!room || !room.players[socket.id]) return;
+    clearTimeout(room.players[socket.id].disconnectTimer);
+    socket.leave(code);
+    removePlayer(code, socket.id);
+  });
+
   socket.on('reconnect_player', ({ persistentId, roomCode }) => {
     const room = rooms[roomCode];
     if (!room) { socket.emit('reconnect_failed'); return; }

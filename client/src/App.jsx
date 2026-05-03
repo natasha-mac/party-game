@@ -81,6 +81,12 @@ function App() {
     socket.emit('join_room', { name, code: roomCode, persistentId: PLAYER_ID });
   };
 
+  const leaveGame = () => {
+    socket.emit('leave_room', gameState.roomId);
+    localStorage.removeItem('deceptionRoom');
+    setGameState(null);
+  };
+
   const startGame = () => socket.emit('start_game', gameState.roomId);
   const nextPhase = () => socket.emit('next_phase', gameState.roomId);
   const submitAnswer = () => {
@@ -357,15 +363,31 @@ function App() {
 
   if (!gameState) return renderHome();
 
+  let screen;
   switch (gameState.state) {
-    case 'lobby': return renderLobby();
-    case 'question': return renderQuestion();
-    case 'reveal': return renderReveal();
-    case 'voting': return renderVoting();
-    case 'results': return renderResults();
-    case 'game_over': return renderGameOver();
+    case 'lobby': screen = renderLobby(); break;
+    case 'question': screen = renderQuestion(); break;
+    case 'reveal': screen = renderReveal(); break;
+    case 'voting': screen = renderVoting(); break;
+    case 'results': screen = renderResults(); break;
+    case 'game_over': screen = renderGameOver(); break;
     default: return renderHome();
   }
+
+  return (
+    <>
+      {screen}
+      <div style={{textAlign: 'center', marginTop: '1rem'}}>
+        <button
+          className="secondary"
+          style={{width: 'auto', padding: '0.5rem 1.5rem', fontSize: '0.9rem', opacity: 0.6}}
+          onClick={leaveGame}
+        >
+          Leave Game
+        </button>
+      </div>
+    </>
+  );
 }
 
 export default App;
