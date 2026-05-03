@@ -242,6 +242,16 @@ function App() {
           <p style={{color: gameState.imposterCaught ? 'var(--success)' : 'var(--danger)'}}>
             {gameState.imposterCaught ? 'Caught! Everyone except the imposter gets +5 pts.' : 'Survived! Imposter gets +10 pts.'}
           </p>
+          <div style={{marginTop: '1.5rem', textAlign: 'left'}}>
+            <div className="answer-card">
+              <div className="answer-author">Everyone was asked</div>
+              <p>"{gameState.normalQuestion}"</p>
+            </div>
+            <div className="answer-card" style={{borderColor: 'rgba(239,68,68,0.4)'}}>
+              <div className="answer-author" style={{color: 'var(--danger)'}}>Imposter was secretly asked</div>
+              <p>"{gameState.imposterQuestion}"</p>
+            </div>
+          </div>
         </div>
 
         <div className="scoreboard">

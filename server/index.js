@@ -122,6 +122,8 @@ function emitRoomUpdate(roomId) {
     if (room.state === 'results' || room.state === 'game_over') {
        playerSpecificData.imposterId = room.imposterId;
        playerSpecificData.imposterCaught = room.imposterCaught;
+       playerSpecificData.normalQuestion = room.questionPair.normal;
+       playerSpecificData.imposterQuestion = room.questionPair.imposter;
     }
 
     io.to(socketId).emit('room_update', {
