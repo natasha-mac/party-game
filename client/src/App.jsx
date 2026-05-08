@@ -115,7 +115,7 @@ function App() {
 
   const renderHome = () => (
     <div className="glass-panel">
-      <h1>Deception Game</h1>
+      <h1>Pink Pee 🩷</h1>
       {error && <div style={{color: 'var(--danger)', marginBottom: '1rem', textAlign: 'center'}}>{error}</div>}
       <input
         type="text"
